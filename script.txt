@@ -38,8 +38,9 @@ local transferirItensParaTrollge = {
     ["Omniversal Chest Item"] = true
 }
 
--- Variável para ativar/desativar o script
+-- Variáveis para ativar/desativar o script e ESP
 local scriptAtivo = false
+local espAtivo = false
 
 function alternarScript()
     scriptAtivo = not scriptAtivo
@@ -50,9 +51,20 @@ function alternarScript()
     end
 end
 
+function alternarESP()
+    espAtivo = not espAtivo
+    if espAtivo then
+        print("ESP ativado")
+    else
+        print("ESP desativado")
+    end
+end
+
 game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
     if input.KeyCode == Enum.KeyCode.G and not gameProcessed then
         alternarScript()
+    elseif input.KeyCode == Enum.KeyCode.H and not gameProcessed then
+        alternarESP()
     end
 end)
 
@@ -72,114 +84,72 @@ win:Toggle("Script Ativo", false, function(TPHUB)
         print("Script desativado via Toggle")
     end
 end)
+win:Toggle("ESP Ativo", false, function(TPHUB)
+    espAtivo = TPHUB
+    if espAtivo then
+        print("ESP ativado via Toggle")
+    else
+        print("ESP desativado via Toggle")
+    end
+end)
 win:Slider("Intervalo de Espera", 1, 10, 2, function(t)
     waitTime = t
 end)
-win:Dropdown("Tipos de Baús", {"Dark Chest", "Light Chest", "Fish Chest", "Drip Chest", "Radioactive Chest", "Demonic Chest", "Machine Chest", "Creepy Chest", "Glitch Chest", "Ruler Chest", "Omniversal Chest"}, function(selected)
+win:Dropdown("Tipos de Baús para Coletar", {"Dark Chest", "Light Chest", "Fish Chest", "Drip Chest", "Radioactive Chest", "Demonic Chest", "Machine Chest", "Creepy Chest", "Glitch Chest", "Ruler Chest", "Omniversal Chest"}, function(selected)
     detectarTiposDeBaus[selected] = not detectarTiposDeBaus[selected]
     print("Tipo de Baú Selecionado: " .. selected)
 end)
 
--- Função para detectar baús específicos
-function detectarBausEspecificos()
-    if not scriptAtivo then
-        print("Script não está ativo")
-        return {}
-    end
+-- Adicionando a TextBox para exibir informações dos baús
+local TextBox = win:TextBox("Informações dos Baús", "", function() end)
+TextBox.TextWrapped = true
+TextBox.ClearTextOnFocus = false
+TextBox.MultiLine = true
 
-    print("Detectando baús específicos")
+-- Função para detectar e listar informações dos baús
+function listarBaus()
     local baus = {}
     for _, objeto in pairs(game.Workspace:GetChildren()) do
-        if objeto:IsA("Part") and detectarTiposDeBaus[objeto.Name] then
-            if objeto.Position.Y < -50 or objeto.Position.Y > 500 then
-                table.insert(baus, objeto)
-                print("Baú detectado: " .. objeto.Name)
+        if objeto:IsA("Part") and objeto.Name:match("Chest") then
+            local tipoBau = "Desconhecido"
+            if objeto.Name:match("Dark Chest") then
+                tipoBau = "Dark Chest"
+            elseif objeto.Name:match("Light Chest") then
+                tipoBau = "Light Chest"
+            elseif objeto.Name:match("Fish Chest") then
+                tipoBau = "Fish Chest"
+            elseif objeto.Name:match("Drip Chest") then
+                tipoBau = "Drip Chest"
+            elseif objeto.Name:match("Radioactive Chest") then
+                tipoBau = "Radioactive Chest"
+            elseif objeto.Name:match("Demonic Chest") then
+                tipoBau = "Demonic Chest"
+            elseif objeto.Name:match("Machine Chest") then
+                tipoBau = "Machine Chest"
+            elseif objeto.Name:match("Creepy Chest") then
+                tipoBau = "Creepy Chest"
+            elseif objeto.Name:match("Glitch Chest") then
+                tipoBau = "Glitch Chest"
+            elseif objeto.Name:match("Ruler Chest") then
+                tipoBau = "Ruler Chest"
+            elseif objeto.Name:match("Omniversal Chest") then
+                tipoBau = "Omniversal Chest"
             end
+            
+            local bauInfo = "Baú: " .. objeto.Name .. "\nTipo: " .. tipoBau .. "\nPosição: " .. tostring(objeto.Position) .. "\n"
+            table.insert(baus, bauInfo)
+            TextBox.Text = TextBox.Text .. bauInfo .. "\n"
+            print(bauInfo)
         end
     end
     return baus
 end
 
--- Função para encontrar o baú mais próximo
-function encontrarBauMaisProximo(baus)
-    local posicaoJogador = character.HumanoidRootPart.Position
-    local bauMaisProximo = nil
-    local menorDistancia = math.huge
-    for _, bau in pairs(baus) do
-        local distancia = (bau.Position - posicaoJogador).magnitude
-        if distancia < menorDistancia then
-            menorDistancia = distancia
-            bauMaisProximo = bau
-        end
-    end
-    if bauMaisProximo then
-        print("Baú mais próximo encontrado: " .. bauMaisProximo.Name)
-    else
-        print("Nenhum baú encontrado")
-    end
-    return bauMaisProximo
-end
-
--- Função para mover-se até o baú usando PathfindingService
-function moverParaBau(bau)
-    print("Movendo para o baú: " .. bau.Name)
-    local caminho = PathfindingService:CreatePath({
-        AgentRadius = 2,
-        AgentHeight = 5,
-        AgentCanJump = true,
-        AgentJumpHeight = 7,
-        AgentMaxSlope = 45,
-    })
-    caminho:ComputeAsync(character.HumanoidRootPart.Position, bau.Position)
-    caminho:MoveTo(character.HumanoidRootPart)
-    caminho.Blocked:Connect(function(blockedWaypointIndex)
-        humanoid:MoveTo(bau.Position)
-    end)
-    caminho.Reached:Connect(function()
-        abrirBau(bau)
-    end)
-end
-
--- Função para abrir o baú
-function abrirBau(bau)
-    if (character.HumanoidRootPart.Position - bau.Position).magnitude < 5 then
-        bau:Destroy() -- Remove o baú do jogo
-        print(bau.Name .. " aberto e item adicionado ao inventário do Roblox!")
-        -- Transferir item para o inventário do Trollge
-        transferirParaInventarioTrollge()
-    end
-end
-
--- Função para transferir itens para o inventário do Trollge
-function transferirParaInventarioTrollge()
-    local inventarioTrollge = player:FindFirstChild("InventarioTrollge")
-    local inventarioRoblox = player:FindFirstChild("Backpack") -- Supondo que o inventário do Roblox seja a Backpack
-    if inventarioTrollge and inventarioRoblox then
-        for _, item in pairs(inventarioRoblox:GetChildren()) do
-            if transferirItensParaTrollge[item.Name] and #inventarioTrollge:GetChildren() < 20 then
-                local novoItem = item:Clone()
-                novoItem.Parent = inventarioTrollge
-                item:Destroy() -- Remove o item do inventário do Roblox
-                print("Item transferido para o inventário do Trollge: " .. novoItem.Name)
-            else
-                print("Inventário do Trollge está cheio ou item não permitido!")
-                break
-            end
-        end
-    end
-end
-
--- Loop principal atualizado
-local waitTime = 2
+-- Loop principal para listar baús
 while true do
-    if scriptAtivo then
-        local baus = detectarBausEspecificos()
-        if #baus > 0 then
-            local bauMaisProximo = encontrarBauMaisProximo(baus)
-            if bauMaisProximo then
-                moverParaBau(bauMaisProximo)
-            end
-        end
+    if espAtivo then
+        TextBox.Text = ""  -- Limpa a TextBox a cada iteração para evitar duplicatas
+        listarBaus()
     end
-    wait(waitTime) -- Intervalo ajustável
+    wait(5) -- Intervalo de 5 segundos entre cada verificação
 end
