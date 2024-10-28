@@ -76,18 +76,24 @@ win:Slider("Intervalo de Espera", 1, 10, 2, function(t)
     waitTime = t
 end)
 win:Dropdown("Tipos de Baús", {"Dark Chest", "Light Chest", "Fish Chest", "Drip Chest", "Radioactive Chest", "Demonic Chest", "Machine Chest", "Creepy Chest", "Glitch Chest", "Ruler Chest", "Omniversal Chest"}, function(selected)
+    detectarTiposDeBaus[selected] = not detectarTiposDeBaus[selected]
     print("Tipo de Baú Selecionado: " .. selected)
 end)
 
 -- Função para detectar baús específicos
 function detectarBausEspecificos()
-    if not scriptAtivo then return {} end
+    if not scriptAtivo then
+        print("Script não está ativo")
+        return {}
+    end
 
+    print("Detectando baús específicos")
     local baus = {}
     for _, objeto in pairs(game.Workspace:GetChildren()) do
         if objeto:IsA("Part") and detectarTiposDeBaus[objeto.Name] then
             if objeto.Position.Y < -50 or objeto.Position.Y > 500 then
                 table.insert(baus, objeto)
+                print("Baú detectado: " .. objeto.Name)
             end
         end
     end
@@ -106,11 +112,17 @@ function encontrarBauMaisProximo(baus)
             bauMaisProximo = bau
         end
     end
+    if bauMaisProximo then
+        print("Baú mais próximo encontrado: " .. bauMaisProximo.Name)
+    else
+        print("Nenhum baú encontrado")
+    end
     return bauMaisProximo
 end
 
 -- Função para mover-se até o baú usando PathfindingService
 function moverParaBau(bau)
+    print("Movendo para o baú: " .. bau.Name)
     local caminho = PathfindingService:CreatePath({
         AgentRadius = 2,
         AgentHeight = 5,
@@ -148,7 +160,7 @@ function transferirParaInventarioTrollge()
                 local novoItem = item:Clone()
                 novoItem.Parent = inventarioTrollge
                 item:Destroy() -- Remove o item do inventário do Roblox
-                print("Item transferido para o inventário do Trollge!")
+                print("Item transferido para o inventário do Trollge: " .. novoItem.Name)
             else
                 print("Inventário do Trollge está cheio ou item não permitido!")
                 break
