@@ -1,0 +1,173 @@
+local PathfindingService = game:GetService("PathfindingService")
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+-- Inicializa o inventário do Trollge
+if not player:FindFirstChild("InventarioTrollge") then
+    local inventarioTrollge = Instance.new("Folder")
+    inventarioTrollge.Name = "InventarioTrollge"
+    inventarioTrollge.Parent = player
+end
+
+-- Configurações de interruptores
+local detectarTiposDeBaus = {
+    ["Dark Chest"] = true,
+    ["Light Chest"] = true,
+    ["Fish Chest"] = true,
+    ["Drip Chest"] = true,
+    ["Radioactive Chest"] = true,
+    ["Demonic Chest"] = true,
+    ["Machine Chest"] = true,
+    ["Creepy Chest"] = true,
+    ["Glitch Chest"] = true,
+    ["Ruler Chest"] = true,
+    ["Omniversal Chest"] = true
+}
+local transferirItensParaTrollge = {
+    ["Dark Chest Item"] = true,
+    ["Light Chest Item"] = true,
+    ["Fish Chest Item"] = true,
+    ["Drip Chest Item"] = true,
+    ["Radioactive Chest Item"] = true,
+    ["Demonic Chest Item"] = true,
+    ["Machine Chest Item"] = true,
+    ["Creepy Chest Item"] = true,
+    ["Glitch Chest Item"] = true,
+    ["Ruler Chest Item"] = true,
+    ["Omniversal Chest Item"] = true
+}
+
+-- Variável para ativar/desativar o script
+local scriptAtivo = false
+
+function alternarScript()
+    scriptAtivo = not scriptAtivo
+    if scriptAtivo then
+        print("Script ativado")
+    else
+        print("Script desativado")
+    end
+end
+
+game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
+    if input.KeyCode == Enum.KeyCode.G and not gameProcessed then
+        alternarScript()
+    end
+end)
+
+-- Carregando a biblioteca de UI
+local GUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Patskorn/GUI/main/Daino.lua"))()
+local idk = GUI:new()
+local win = idk:Tap("Baús")
+win:Button("Ativar/Desativar Script", function()
+    alternarScript()
+end)
+win:Label("Coletor de Baús")
+win:Toggle("Script Ativo", false, function(TPHUB)
+    scriptAtivo = TPHUB
+    if scriptAtivo then
+        print("Script ativado via Toggle")
+    else
+        print("Script desativado via Toggle")
+    end
+end)
+win:Slider("Intervalo de Espera", 1, 10, 2, function(t)
+    waitTime = t
+end)
+win:Dropdown("Tipos de Baús", {"Dark Chest", "Light Chest", "Fish Chest", "Drip Chest", "Radioactive Chest", "Demonic Chest", "Machine Chest", "Creepy Chest", "Glitch Chest", "Ruler Chest", "Omniversal Chest"}, function(selected)
+    print("Tipo de Baú Selecionado: " .. selected)
+end)
+
+-- Função para detectar baús específicos
+function detectarBausEspecificos()
+    if not scriptAtivo then return {} end
+
+    local baus = {}
+    for _, objeto in pairs(game.Workspace:GetChildren()) do
+        if objeto:IsA("Part") and detectarTiposDeBaus[objeto.Name] then
+            if objeto.Position.Y < -50 or objeto.Position.Y > 500 then
+                table.insert(baus, objeto)
+            end
+        end
+    end
+    return baus
+end
+
+-- Função para encontrar o baú mais próximo
+function encontrarBauMaisProximo(baus)
+    local posicaoJogador = character.HumanoidRootPart.Position
+    local bauMaisProximo = nil
+    local menorDistancia = math.huge
+    for _, bau in pairs(baus) do
+        local distancia = (bau.Position - posicaoJogador).magnitude
+        if distancia < menorDistancia then
+            menorDistancia = distancia
+            bauMaisProximo = bau
+        end
+    end
+    return bauMaisProximo
+end
+
+-- Função para mover-se até o baú usando PathfindingService
+function moverParaBau(bau)
+    local caminho = PathfindingService:CreatePath({
+        AgentRadius = 2,
+        AgentHeight = 5,
+        AgentCanJump = true,
+        AgentJumpHeight = 7,
+        AgentMaxSlope = 45,
+    })
+    caminho:ComputeAsync(character.HumanoidRootPart.Position, bau.Position)
+    caminho:MoveTo(character.HumanoidRootPart)
+    caminho.Blocked:Connect(function(blockedWaypointIndex)
+        humanoid:MoveTo(bau.Position)
+    end)
+    caminho.Reached:Connect(function()
+        abrirBau(bau)
+    end)
+end
+
+-- Função para abrir o baú
+function abrirBau(bau)
+    if (character.HumanoidRootPart.Position - bau.Position).magnitude < 5 then
+        bau:Destroy() -- Remove o baú do jogo
+        print(bau.Name .. " aberto e item adicionado ao inventário do Roblox!")
+        -- Transferir item para o inventário do Trollge
+        transferirParaInventarioTrollge()
+    end
+end
+
+-- Função para transferir itens para o inventário do Trollge
+function transferirParaInventarioTrollge()
+    local inventarioTrollge = player:FindFirstChild("InventarioTrollge")
+    local inventarioRoblox = player:FindFirstChild("Backpack") -- Supondo que o inventário do Roblox seja a Backpack
+    if inventarioTrollge and inventarioRoblox then
+        for _, item in pairs(inventarioRoblox:GetChildren()) do
+            if transferirItensParaTrollge[item.Name] and #inventarioTrollge:GetChildren() < 20 then
+                local novoItem = item:Clone()
+                novoItem.Parent = inventarioTrollge
+                item:Destroy() -- Remove o item do inventário do Roblox
+                print("Item transferido para o inventário do Trollge!")
+            else
+                print("Inventário do Trollge está cheio ou item não permitido!")
+                break
+            end
+        end
+    end
+end
+
+-- Loop principal atualizado
+local waitTime = 2
+while true do
+    if scriptAtivo then
+        local baus = detectarBausEspecificos()
+        if #baus > 0 then
+            local bauMaisProximo = encontrarBauMaisProximo(baus)
+            if bauMaisProximo then
+                moverParaBau(bauMaisProximo)
+            end
+        end
+    end
+    wait(waitTime) -- Intervalo ajustável
+end
