@@ -322,6 +322,9 @@ TeleportToChestsDelay.TextScaled = true
 TeleportToChestsDelay.BackgroundTransparency = .5
 TeleportToChestsDelay.PlaceholderText = "Teleport Delay"
 TeleportToChestsDelay.PlaceholderColor3 = Color3.fromRGB(0, 0, 0)
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
 
 AutoCollectChests.Name = "AutoCollectChests"
 AutoCollectChests.Parent = Frame2
