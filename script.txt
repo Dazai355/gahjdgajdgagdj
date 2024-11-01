@@ -3,9 +3,9 @@ game.Workspace.FallenPartsDestroyHeight = -50000
 -- Função para verificar se a posição é proibida
 function isCoordenadaProibida(posicao)
     -- Defina as coordenadas exatas do baú proibido
-    local coordenadaX = 100  -- Substitua pela posição real do baú proibido
-    local coordenadaY = 0
-    local coordenadaZ = 100
+    local coordenadaX = -4445.72  -- Substitua pela posição real do baú proibido
+    local coordenadaY = 114.40
+    local coordenadaZ = -5319.55
     local margemTolerancia = 5  -- Ajuste conforme necessário
 
     -- Verifica se a posição está dentro do limite de tolerância
