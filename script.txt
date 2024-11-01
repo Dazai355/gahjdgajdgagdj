@@ -1,14 +1,19 @@
 game.Workspace.FallenPartsDestroyHeight = -50000
 
-local coordenadasProibidas = Vector3.new(-4445.72, 114.40, -5319.55)
-local margemTolerancia = 20
-local function isCoordenadaProibida(posicaoAtual)
-    local diferencaX = math.abs(posicaoAtual.X - coordenadasProibidas.X)
-    local diferencaY = math.abs(posicaoAtual.Y - coordenadasProibidas.Y)
-    local diferencaZ = math.abs(posicaoAtual.Z - coordenadasProibidas.Z)
-    
-    return (diferencaX <= margemTolerancia) and (diferencaY <= margemTolerancia) and (diferencaZ <= margemTolerancia)
+-- Função para verificar se a posição é proibida
+function isCoordenadaProibida(posicao)
+    -- Defina as coordenadas exatas do baú proibido
+    local coordenadaX = 100  -- Substitua pela posição real do baú proibido
+    local coordenadaY = 0
+    local coordenadaZ = 100
+    local margemTolerancia = 5  -- Ajuste conforme necessário
+
+    -- Verifica se a posição está dentro do limite de tolerância
+    return (math.abs(posicao.X - coordenadaX) <= margemTolerancia) and
+           (math.abs(posicao.Y - coordenadaY) <= margemTolerancia) and
+           (math.abs(posicao.Z - coordenadaZ) <= margemTolerancia)
 end
+
 
 _G.Teleport = false
 _G.Collect = false
@@ -326,13 +331,16 @@ if v:IsA("BasePart") then
 fireproximityprompt(v.ProximityPrompt)
 end
 end
+-- Código para teleporte, ignorando baús proibidos
 for i, v in pairs(game:GetService("Workspace").chests:GetChildren()) do
     if v:IsA("BasePart") and not isCoordenadaProibida(v.Position) then
-        fireproximityprompt(v.ProximityPrompt)
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.CFrame
+        -- Coloque o posicionamento dos PartX (FloatPaths) aqui se necessário
     else
-        print("Baú nas coordenadas proibidas. Ignorando.")
+        print("Tentativa de teleporte para baú nas coordenadas proibidas. Ignorando.")
     end
 end
+
 for i,v in pairs(game:GetService("Workspace"):GetChildren()) do
 if v.Name == "DarkChest_p" or v.Name == "Weeping Chest-p" then
 fireproximityprompt(v.ProximityPrompt)
@@ -563,7 +571,15 @@ AutoOpenAllChests.Text = "Auto Open Chests (On)"
 AutoOpenAllChests.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
 _G.OpenAllChests = true
 while _G.OpenAllChests == true do wait(1)
-for i,v in pairs(game.Players.LocalPlayer:FindFirstChildOfClass("Backpack"):GetChildren()) do
+-- Código para coleta automática, ignorando baús proibidos
+for i, v in pairs(game:GetService("Workspace").chests:GetChildren()) do
+    if v:IsA("BasePart") and not isCoordenadaProibida(v.Position) then
+        fireproximityprompt(v.ProximityPrompt)
+    else
+        print("Baú nas coordenadas proibidas. Ignorando.")
+    end
+end
+    for i,v in pairs(game.Players.LocalPlayer:FindFirstChildOfClass("Backpack"):GetChildren()) do
 		if v.Name == "Chest" or v.Name == "Dark Chest" or v.Name == "Light Chest" then
 			v.Parent = game.Players.LocalPlayer.Character
 			end
