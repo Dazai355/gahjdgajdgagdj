@@ -15,10 +15,6 @@ v:Destroy()
 end
 end
 
-local TweenService = game:GetService("TweenService")
-local MIN_HEIGHT = 20 -- Defina o valor mínimo de altura
-local MAX_HEIGHT = 200 -- Defina o valor máximo de altura
-local tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 local AutoChestsGui = Instance.new("ScreenGui")
 local Frame = Instance.new("Frame")
 local Frame2 = Instance.new("Frame")
@@ -196,43 +192,34 @@ TeleportToChests.Visible = true
 TeleportToChests.BackgroundTransparency = .5
 TeleportToChests.BorderColor3 = Color3.fromRGB(255, 255, 255)
 TeleportToChests.BorderSizePixel = 2
-
 TeleportToChests.MouseButton1Up:Connect(function()
-    if TeleportToChests.Text == "Teleport To Chests (Off)" then
-        TeleportToChests.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-        TeleportToChests.Text = "Teleport To Chests (On)"
-        _G.Teleport = true
+if TeleportToChests.Text == "Teleport To Chests (Off)" then
+TeleportToChests.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+TeleportToChests.Text = "Teleport To Chests (On)"
 
-        while _G.Teleport do
-            wait(tonumber(TeleportToChestsDelay.Text) or 0.2) -- Usar o valor do delay ou 0.2 como padrão
-            local closestChest = nil
-            local shortestDistance = math.huge
+local BV = Instance.new("BodyVelocity",game.Players.LocalPlayer.Character.HumanoidRootPart)
+		local BG = Instance.new("BodyGyro",game.Players.LocalPlayer.Character.HumanoidRootPart)
+		BG.MaxTorque = Vector3.new(math.huge,math.huge,math.huge)
+		BG.D = 500
+		BG.P = 50000
+		BG.CFrame = game.Workspace.CurrentCamera.CFrame
+		BV.MaxForce = Vector3.new(math.huge,math.huge,math.huge)
+BV.Velocity = game.Workspace.CurrentCamera.CFrame.LookVector * 0.0000000001
 
-            -- Encontrar o baú mais próximo
-            for i, v in pairs(game:GetService("Workspace").chests:GetChildren()) do
-                if v:IsA("BasePart") then
-                    local distance = (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - v.Position).Magnitude
-                    if distance < shortestDistance then
-                        shortestDistance = distance
-                        closestChest = v
-                    end
-                end
-            end
-
-            -- Se um baú mais próximo for encontrado, voar até ele
-            if closestChest then
-                local tween = TweenService:Create(game.Players.LocalPlayer.Character.HumanoidRootPart, TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {CFrame = closestChest.CFrame})
-                tween:Play()
-                tween.Completed:Wait() -- Espera a animação terminar
-                fireproximityprompt(closestChest.ProximityPrompt) -- Coleta o baú
-            end
-        end
-    else
-        TeleportToChests.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-        TeleportToChests.Text = "Teleport To Chests (Off)"
-        _G.Teleport = false
-    end
-end)
+_G.Teleport = true
+while _G.Teleport == true do wait(TeleportToChestsDelay.Text)
+for i,v in pairs(game:GetService("Workspace").chests:GetChildren()) do
+if v:IsA("BasePart") then
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.CFrame
+Part1.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0,-3.5,0)
+Part2.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(-5.5,2,0)
+Part3.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(5.5,2,0)
+Part4.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0,2,5.5)
+Part5.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0,2,-5.5)
+Part6.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0,7.5,0)
+wait(TeleportToChestsDelay.Text)
+end
+end
 for i,v in pairs(game:GetService("Workspace"):GetChildren()) do
 if v.Name == "DarkChest_p" or v.Name == "Weeping Chest-p" then
 game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.CFrame
@@ -267,7 +254,7 @@ TeleportToChestsSetting.Name = "TeleportToChestsSetting"
 TeleportToChestsSetting.Parent = TeleportToChests
 TeleportToChestsSetting.Size = UDim2.new(0, 25, 0, 25)
 TeleportToChestsSetting.Position = UDim2.new(0, 100, 0, 0)
-TeleportToChestsSetting.Text = "⚙"
+TeleportToChestsSetting.Text = "⚙️"
 TeleportToChestsSetting.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 TeleportToChestsSetting.BorderColor3 = Color3.fromRGB(255, 255, 255)
 TeleportToChestsSetting.BorderSizePixel = 2
@@ -348,7 +335,7 @@ AutoCollectSetting.Name = "AutoCollectSetting"
 AutoCollectSetting.Parent = AutoCollectChests
 AutoCollectSetting.Size = UDim2.new(0, 25, 0, 25)
 AutoCollectSetting.Position = UDim2.new(0, 100, 0, 0)
-AutoCollectSetting.Text = "⚙"
+AutoCollectSetting.Text = "⚙️"
 AutoCollectSetting.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 AutoCollectSetting.BorderColor3 = Color3.fromRGB(255, 255, 255)
 AutoCollectSetting.BorderSizePixel = 2
