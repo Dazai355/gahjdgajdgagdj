@@ -1,5 +1,16 @@
 game.Workspace.FallenPartsDestroyHeight = -50000
 
+local coordenadasProibidas = Vector3.new(-4445.72, 114.40, -5319.55)
+local margemTolerancia = 20
+
+local function isCoordenadaProibida(posicaoAtual)
+    local diferencaX = math.abs(posicaoAtual.X - coordenadasProibidas.X)
+    local diferencaY = math.abs(posicaoAtual.Y - coordenadasProibidas.Y)
+    local diferencaZ = math.abs(posicaoAtual.Z - coordenadasProibidas.Z)
+    
+    return (diferencaX <= margemTolerancia) and (diferencaY <= margemTolerancia) and (diferencaZ <= margemTolerancia)
+end
+
 _G.Teleport = false
 _G.Collect = false
 _G.OpenAllChests = false
@@ -306,30 +317,35 @@ AutoCollectChests.BackgroundTransparency = .5
 AutoCollectChests.BorderColor3 = Color3.fromRGB(255, 255, 255)
 AutoCollectChests.BorderSizePixel = 2
 AutoCollectChests.MouseButton1Up:Connect(function()
-if AutoCollectChests.Text == "Auto Collect Chests (Off)" then
-AutoCollectChests.Text = "Auto Collect Chests (On)"
-AutoCollectChests.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-_G.Collect = true
-while _G.Collect == true do wait(AutoCollectDelay.Text)
-for i,v in pairs(game:GetService("Workspace").chests:GetChildren()) do
-if v:IsA("BasePart") then
-fireproximityprompt(v.ProximityPrompt)
-end
-end
-for i,v in pairs(game:GetService("Workspace"):GetChildren()) do
-if v.Name == "DarkChest_p" or v.Name == "Weeping Chest-p" then
-fireproximityprompt(v.ProximityPrompt)
-end
-end
-end
-else
-if AutoCollectChests.Text == "Auto Collect Chests (On)" then
-AutoCollectChests.Text = "Auto Collect Chests (Off)"
-AutoCollectChests.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-_G.Collect = false
-end
-end
+    if AutoCollectChests.Text == "Auto Collect Chests (Off)" then
+        AutoCollectChests.Text = "Auto Collect Chests (On)"
+        AutoCollectChests.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+        _G.Collect = true
+        while _G.Collect == true do 
+            wait(AutoCollectDelay.Text)
+            for i, v in pairs(game:GetService("Workspace").chests:GetChildren()) do
+                -- Verificação com coordenadas específicas
+                if v:IsA("BasePart") and not isCoordenadaProibida(v.Position) then
+                    fireproximityprompt(v.ProximityPrompt)
+                else
+                    print("Baú nas coordenadas proibidas. Ignorando.")
+                end
+            end
+            for i, v in pairs(game:GetService("Workspace"):GetChildren()) do
+                if (v.Name == "DarkChest_p" or v.Name == "Weeping Chest-p") and not isCoordenadaProibida(v.Position) then
+                    fireproximityprompt(v.ProximityPrompt)
+                else
+                    print("Baú nas coordenadas proibidas. Ignorando.")
+                end
+            end
+        end
+    else
+        AutoCollectChests.Text = "Auto Collect Chests (Off)"
+        AutoCollectChests.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+        _G.Collect = false
+    end
 end)
+
 
 AutoCollectSetting.Name = "AutoCollectSetting"
 AutoCollectSetting.Parent = AutoCollectChests
@@ -541,29 +557,31 @@ AutoOpenAllChests.TextSize = 20
 AutoOpenAllChests.Visible = false
 AutoOpenAllChests.BackgroundTransparency = .5
 AutoOpenAllChests.MouseButton1Up:Connect(function()
-if AutoOpenAllChests.Text == "Auto Open Chests (Off)" then
-AutoOpenAllChests.Text = "Auto Open Chests (On)"
-AutoOpenAllChests.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-_G.OpenAllChests = true
-while _G.OpenAllChests == true do wait(1)
-for i,v in pairs(game.Players.LocalPlayer:FindFirstChildOfClass("Backpack"):GetChildren()) do
-		if v.Name == "Chest" or v.Name == "Dark Chest" or v.Name == "Light Chest" then
-			v.Parent = game.Players.LocalPlayer.Character
-			end
-end
-for i,v in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
-		if v.Name == "Chest" or v.Name == "Dark Chest" or v.Name == "Light Chest" then
-			v:Activate()
-			end
-end
-end
-else
-if AutoOpenAllChests.Text == "Auto Open Chests (On)" then
-AutoOpenAllChests.Text = "Auto Open Chests (Off)"
-AutoOpenAllChests.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-_G.OpenAllChests = false
-end
-end
+    if AutoOpenAllChests.Text == "Auto Open Chests (Off)" then
+        AutoOpenAllChests.Text = "Auto Open Chests (On)"
+        AutoOpenAllChests.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+        _G.OpenAllChests = true
+        while _G.OpenAllChests == true do 
+            wait(1)
+            for i, v in pairs(game.Players.LocalPlayer:FindFirstChildOfClass("Backpack"):GetChildren()) do
+                if (v.Name == "Chest" or v.Name == "Dark Chest" or v.Name == "Light Chest") then
+                    v.Parent = game.Players.LocalPlayer.Character
+                end
+            end
+            for i, v in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
+                -- Verificação com coordenadas específicas
+                if (v.Name == "Chest" or v.Name == "Dark Chest" or v.Name == "Light Chest") and not isCoordenadaProibida(v.Position) then
+                    v:Activate()
+                else
+                    print("Baú nas coordenadas proibidas. Ignorando.")
+                end
+            end
+        end
+    else
+        AutoOpenAllChests.Text = "Auto Open Chests (Off)"
+        AutoOpenAllChests.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+        _G.OpenAllChests = false
+    end
 end)
 
 DeleteUselessItems.Name = "DeleteUselessItems"
