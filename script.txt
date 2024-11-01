@@ -337,28 +337,42 @@ AutoCollectChests.BackgroundTransparency = .5
 AutoCollectChests.BorderColor3 = Color3.fromRGB(255, 255, 255)
 AutoCollectChests.BorderSizePixel = 2
 AutoCollectChests.MouseButton1Up:Connect(function()
-if AutoCollectChests.Text == "Auto Collect Chests (Off)" then
-AutoCollectChests.Text = "Auto Collect Chests (On)"
-AutoCollectChests.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-_G.Collect = true
--- Código de coleta automática dentro do AutoCollectChests
-    while _G.Collect == true do 
-        wait(0.5)  -- Intervalo aumentado para reduzir o uso de recursos
-        local collectedCount = 0  -- Contador para o limite de coleta por ciclo
-        local maxCollectPerCycle = 5  -- Limita a coleta a 5 baús por ciclo
-    
-        for i, v in pairs(game:GetService("Workspace").chests:GetChildren()) do
-            if collectedCount >= maxCollectPerCycle then break end
-            if v:IsA("BasePart") and (v.Position - humanoidRootPart.Position).Magnitude < 50 then  -- Apenas coleta baús próximos
-                if not isCoordenadaProibida(v.Position) then  -- Ignora baús nas coordenadas proibidas
-                    fireproximityprompt(v.ProximityPrompt)
-                    collectedCount = collectedCount + 1
-                else
-                    print("Baú nas coordenadas proibidas. Ignorando.")
+    if AutoCollectChests.Text == "Auto Collect Chests (Off)" then
+        AutoCollectChests.Text = "Auto Collect Chests (On)"
+        AutoCollectChests.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+        _G.Collect = true
+
+        -- Definição de variáveis essenciais
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+
+        -- Código de coleta automática dentro do AutoCollectChests
+        while _G.Collect == true do 
+            wait(0.5)  -- Intervalo para reduzir o uso de recursos
+            local collectedCount = 0  -- Contador para o limite de coleta por ciclo
+            local maxCollectPerCycle = 5  -- Limita a coleta a 5 baús por ciclo
+
+            for i, v in pairs(game:GetService("Workspace").chests:GetChildren()) do
+                if collectedCount >= maxCollectPerCycle then break end
+                if v:IsA("BasePart") and (v.Position - humanoidRootPart.Position).Magnitude < 50 then
+                    if not isCoordenadaProibida(v.Position) then  -- Ignora baús nas coordenadas proibidas
+                        fireproximityprompt(v.ProximityPrompt)
+                        collectedCount = collectedCount + 1
+                    else
+                        print("Baú nas coordenadas proibidas. Ignorando.")
+                    end
                 end
             end
         end
+
+    else
+        AutoCollectChests.Text = "Auto Collect Chests (Off)"
+        AutoCollectChests.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+        _G.Collect = false  -- Interrompe o loop ao desativar
     end
+end)
+
     
 
 
