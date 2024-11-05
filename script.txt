@@ -1,26 +1,5 @@
 game.Workspace.FallenPartsDestroyHeight = -50000
 
--- Script Anti-AFK
-local Player = game.Players.LocalPlayer
-local Character = Player.Character or Player.CharacterAdded:Wait()
-local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
-
-local function antiAFK()
-    while true do
-        wait(60) -- Intervalo de tempo para executar a ação (ajuste conforme necessário)
-        
-        -- Movimento temporário para prevenir AFK
-        local originalPosition = HumanoidRootPart.Position
-        HumanoidRootPart.CFrame = HumanoidRootPart.CFrame * CFrame.new(0, 0, 1)
-        wait(1)
-        HumanoidRootPart.CFrame = CFrame.new(originalPosition)
-    end
-end
-
--- Inicia a função anti-AFK em uma nova thread
-spawn(antiAFK)
-
-
 -- Função para verificar se a posição é proibida
 function isCoordenadaProibida(posicao)
     -- Defina as coordenadas exatas do baú proibido
